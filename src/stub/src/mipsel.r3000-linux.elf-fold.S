@@ -31,6 +31,10 @@ NBPW=  4
 #include "arch/mips/r3000/macros.ash"
 #include "arch/mips/r3000/bits.ash"
 
+// eglibc-2.11.1/ports/sysdeps/unix/sysv/linux/mips/mips64/n32/sysdep.h
+// #define __SYSCALL_CLOBBERS "$1", "$3", "$10", "$11", "$12", "$13", \
+//    "$14", "$15", "$24", "$25", "hi", "lo", "memory"
+
         .set mips1
         .set noreorder
         .set noat
@@ -399,24 +403,14 @@ mmap: .globl mmap
           addiu sp,sp,sp_frame
 
 sysgo:  // src/mipsel.r3000-linux.elf-fold.S
-sysgo2:
         syscall
 sysret:
-        bgez a3,sysOK
+        beqz a3,sysOK  // Linux MIPS convention
           nop
-        move v0,a3  // -errno:  < 0, and > 0xfffff000
+        sub v0,zero,v0  // -errno:  < 0, and > 0xfffff000
 sysOK:
         jr ra
           nop
-
-sysgo_incl: .globl sysgo_incl
-        syscall
-sysret_incl: .globl sysret_incl
-        .set noat
-        sltiu at,a3,1   /* 1: no error;  0: error */
-        addiu at,at,-1  /* 0: no error; -1: error */
-        or v0,v0,at     /* good result, else -1 for error */
-        .set at
 
 exit: .globl exit
         b sysgo; li v0,__NR_exit
