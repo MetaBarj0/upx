@@ -199,7 +199,7 @@ r_pse .req r8
         sub arg3,arg3,#1  @ room for null terminator
         do_sys7t __NR_readlink  // ENOENT is OK
         cmn r0,#1<<12
-        movcs r1,arg1  @ FIXME?  "/proc/self/exe"
+        adrcs r1,proc_self_exe
         movcs r0,#14  @ strlen("/proc/self/exe")
 link_ok:
         add r2,r1,r0  @ end
