@@ -3797,8 +3797,8 @@ PackLinuxElf32::generateElfHdr(
     assert(get_te16(&h2->ehdr.e_phentsize) == sizeof(Elf32_Phdr));
 
     h2->ehdr.e_shoff = 0;
+    set_te16(&h2->ehdr.e_shentsize, sizeof(Elf32_Shdr));  // libbfd-2.41-38.fc40
     if (o_elf_shnum) {
-        set_te16(&h2->ehdr.e_shentsize, sizeof(Elf32_Shdr));
         h2->ehdr.e_shnum = o_elf_shnum;
         h2->ehdr.e_shstrndx = o_elf_shnum - 1;
     }
@@ -3806,7 +3806,9 @@ PackLinuxElf32::generateElfHdr(
         // https://bugzilla.redhat.com/show_bug.cgi?id=2131609
         // 0==.e_shnum is a special case for libbfd
         // that requires 0==.e_shentsize in order to force "no Shdrs"
-        h2->ehdr.e_shentsize = 0;
+        // But qemu 8.2.9 with libbfd-2.41-38.fc40  says EXEC format error
+        // and uses 0==.e_shoff instead.
+        // h2->ehdr.e_shentsize = 0;
         h2->ehdr.e_shnum = 0;
         h2->ehdr.e_shstrndx = 0;
     }
@@ -4006,7 +4008,7 @@ PackOpenBSDElf32x86::generateElfHdr(
                          h3->ehdr.e_shoff = 0;
     assert(get_te16(&h3->ehdr.e_ehsize)    == sizeof(Elf32_Ehdr));
     assert(get_te16(&h3->ehdr.e_phentsize) == sizeof(Elf32_Phdr));
-    h3->ehdr.e_shentsize = 0;
+    set_te16(&h3->ehdr.e_shentsize, sizeof(Elf32_Shdr));  // libbfd-2.41-38.fc40
     h3->ehdr.e_shnum = 0;
     h3->ehdr.e_shstrndx = 0;
 
@@ -4102,8 +4104,8 @@ PackLinuxElf64::generateElfHdr(
     assert(get_te16(&h2->ehdr.e_phentsize) == sizeof(Elf64_Phdr));
 
     h2->ehdr.e_shoff = 0;
+    set_te16(&h2->ehdr.e_shentsize, sizeof(Elf64_Shdr));  // libbfd-2.41-38.fc40
     if (o_elf_shnum) {
-        set_te16(&h2->ehdr.e_shentsize, sizeof(Elf64_Shdr));
         h2->ehdr.e_shnum = o_elf_shnum;
         h2->ehdr.e_shstrndx = o_elf_shnum - 1;
     }
@@ -4111,7 +4113,9 @@ PackLinuxElf64::generateElfHdr(
         // https://bugzilla.redhat.com/show_bug.cgi?id=2131609
         // 0==.e_shnum is a special case for libbfd
         // that requires 0==.e_shentsize in order to force "no Shdrs"
-        h2->ehdr.e_shentsize = 0;
+        // But qemu 8.2.9 with libbfd-2.41-38.fc40  says EXEC format error
+        // and uses 0==.e_shoff instead.
+        // h2->ehdr.e_shentsize = 0;
         h2->ehdr.e_shnum = 0;
         h2->ehdr.e_shstrndx = 0;
     }
