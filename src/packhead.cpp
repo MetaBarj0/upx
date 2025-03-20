@@ -47,7 +47,10 @@ void PackHeader::reset() noexcept {
 
 int PackHeader::set_method(int m, unsigned offset) {
     unsigned mc = ~(0x80u << 24) & m; // see ph_forced_method
-    if ((mc < M_NRV2B_LE32 || M_LZMA < mc) && ~0u != offset)
+    unsigned lo = 0xFF & m;
+    // See packer_c.cpp for "hi bytes" in M_LZMA_003 and M_LZMA_407.
+    // "hi bytes" are not allowed unless M_LZMA.
+    if ((lo < M_NRV2B_LE32 || M_LZMA < lo || (M_LZMA != lo && mc != lo)) && ~0u != offset)
         throwCantPack("bad method %#x at %#x", (unsigned) m, offset);
     return method = m;
 }

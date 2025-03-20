@@ -1534,7 +1534,7 @@ PackLinuxElf32::buildLinuxLoader(
 //   SO_MAIN  C-language supervision based on PT_LOADs
         char sec[120]; memset(sec, 0, sizeof(sec));  // debug convenience
         int len = 0;
-        unsigned m_decompr = methods_used | (1u << ph_forced_method(ph.method));
+        unsigned m_decompr = methods_used | (1u << (0xFF & ph_forced_method(ph.method)));
         len += snprintf(sec, sizeof(sec), "%s", "SO_HEAD,ptr_NEXT,EXP_HEAD");
 
         // Start of dasiy-chain fall-through.
@@ -1586,7 +1586,7 @@ PackLinuxElf32::buildLinuxLoader(
         initLoader(fold, szfold);
         char sec[120]; memset(sec, 0, sizeof(sec));  // debug convenience
         int len = 0;
-        unsigned m_decompr = methods_used | (1u << ph_forced_method(ph.method));
+        unsigned m_decompr = methods_used | (1u << (0xFF & ph_forced_method(ph.method)));
         len += snprintf(sec, sizeof(sec), "%s", ".text,EXP_HEAD");
         if (((1u<<M_NRV2B_LE32)|(1u<<M_NRV2B_8)|(1u<<M_NRV2B_LE16)) & m_decompr) {
             len += snprintf(&sec[len], sizeof(sec) - len, ",%s", "NRV2B");
@@ -1692,7 +1692,7 @@ PackLinuxElf32::buildLinuxLoader(
             defineSymbols(ft);
     }
     else { // main program with ELF1 de-compressor
-        addStubEntrySections(ft, methods_used | (1u << ph_forced_method(ph.method)) );
+        addStubEntrySections(ft, methods_used | (1u << (0xFF & ph_forced_method(ph.method))) );
         if (!xct_off) { // main program
             defineSymbols(ft);
         }
@@ -1731,7 +1731,7 @@ PackLinuxElf64::buildLinuxLoader(
 //   SO_MAIN  C-language supervision based on PT_LOADs
         char sec[120]; memset(sec, 0, sizeof(sec));  // debug convenience
         int len = 0;
-        unsigned m_decompr = methods_used | (1u << ph_forced_method(ph.method));
+        unsigned m_decompr = methods_used | (1u << (0xFF & ph_forced_method(ph.method)));
         len += snprintf(sec, sizeof(sec), "%s", "SO_HEAD,ptr_NEXT,EXP_HEAD");
 
         // Start of dasiy-chain fall-through.
@@ -1776,7 +1776,7 @@ PackLinuxElf64::buildLinuxLoader(
         initLoader(fold, szfold);
         char sec[120]; memset(sec, 0, sizeof(sec));  // debug convenience
         int len = 0;
-        unsigned m_decompr = methods_used | (1u << ph_forced_method(ph.method));
+        unsigned m_decompr = methods_used | (1u << (0xFF & ph_forced_method(ph.method)));
         len += snprintf(sec, sizeof(sec), "%s", ".text,EXP_HEAD");
         if (((1u<<M_NRV2B_LE32)|(1u<<M_NRV2B_8)|(1u<<M_NRV2B_LE16)) & m_decompr) {
             len += snprintf(&sec[len], sizeof(sec) - len, ",%s", "NRV2B");
@@ -1881,7 +1881,7 @@ PackLinuxElf64::buildLinuxLoader(
         }
     }
     else { // main program with ELF1 de-compressor
-        addStubEntrySections(ft, methods_used | (1u << ph_forced_method(ph.method)) );
+        addStubEntrySections(ft, methods_used | (1u << (0xFF & ph_forced_method(ph.method))) );
         if (!xct_off) { // main program
             defineSymbols(ft);
         }
