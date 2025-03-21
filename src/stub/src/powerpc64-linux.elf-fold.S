@@ -357,6 +357,7 @@ SYS_munmap=    91
 SYS_ftruncate= 93
 SYS_mprotect= 125
 SYS_msync=    144
+SYS_openat=   286
 SYS_memfd_create= 360
 
 mmap: .globl mmap
@@ -389,6 +390,9 @@ read: .globl read
         li r0,SYS_read;     5: b 5f
 open: .globl open
         li r0,SYS_open;     5: b 5f
+openat64: .globl openat64  // alias of openat because this is 64-bit already
+openat: .globl openat
+        li r0,SYS_openat;   5: b 5f
 close: .globl close
         li r0,SYS_close;    5: b sysgo
 

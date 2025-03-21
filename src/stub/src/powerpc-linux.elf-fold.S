@@ -290,6 +290,7 @@ SYS_munmap=    91
 SYS_ftruncate= 93
 SYS_mprotect= 125
 SYS_msync=    144
+SYS_openat=   286
 SYS_memfd_create= 360
 
 exit: .globl exit
@@ -308,6 +309,8 @@ read: .globl read
         li r0,SYS_read;     5: b 5f
 open: .globl open
         li r0,SYS_open;     5: b 5f
+openat: .globl openat
+        li r0,SYS_openat;   5: b 5f
 mprotect: .globl mprotect
         li 0,SYS_mprotect;  5: b 5f
 msync: .globl msync
