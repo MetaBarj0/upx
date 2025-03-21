@@ -83,8 +83,29 @@ extern void my_bkpt(void const *, ...);
 
 #define MFD_EXEC 0x10
 //#define O_RDWR 2
-#define O_DIRECTORY 0200000  /* 0x010000 asm-generic/fcntl.h */
-#define O_TMPFILE 020000000  /* 0x400000 asm-generic/fcntl.h */
+
+#if defined(__aarch64__)  //{
+// linux/arch/arm64/include/uapi/asm/fcntl.h:
+#define O_DIRECTORY  040000 /* must be a directory */
+
+#elif defined(__arm__)  //}{
+// linux/arch/arm/include/uapi/asm/fcntl.h:
+#define O_DIRECTORY  040000 /* must be a directory */
+
+#elif defined(__powerpc__) || defined(__powerpc64__)  //}{
+// linux/arch/powerpc/include/uapi/asm/fcntl.h:
+#define O_DIRECTORY      040000 /* must be a directory */
+
+#else  //}{ i386, amd64, mips
+// linux/include/uapi/asm-generic/fcntl.h:
+#define O_DIRECTORY 00200000 /* must be a directory */
+
+#endif  //}
+
+// linux/include/uapi/asm-generic/fcntl.h:
+#define __O_TMPFILE 020000000
+#define O_TMPFILE (__O_TMPFILE | O_DIRECTORY)
+
 #define EISDIR 21 /* directory mismatch */
 #define EINVAL 22 /* asm-generic/errno-base.h */
 

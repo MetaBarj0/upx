@@ -399,13 +399,13 @@ upxfd_create: .globl upxfd_create // (char *tag, unsigned flags)
         li a2,0; b 0b  // try again without MFD_EXEC
 no_memfd:  // so try /dev/shm
 O_RDWR= 2
-O_DIRECTORY= 0200000  // 0x010000
+O_DIRECTORY= 040000  // 0x4000
 O_TMPFILE= 020000000  // 0x400000
         mflr r6; bl 0f; .asciz "/dev/shm"; .balign 4;
 0:      mflr a1; mtlr r6
         li a2,0700
-        lis a3,(O_DIRECTORY|O_TMPFILE)>>16
-        ori a3,a3,O_RDWR
+        lis a3,O_TMPFILE>>16
+        ori a3,a3,O_RDWR | O_DIRECTORY
         li r0,SYS_open; sc; bns+ ok_memfd; teq r0,r0
 ok_memfd:
         ret

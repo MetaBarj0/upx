@@ -509,7 +509,7 @@ brk:    do_sys __NR_brk; ret
 munmap: do_sys __NR_munmap; ret
 
 O_RDWR= 2
-O_DIRECTORY= 0200000  // 0x010000
+O_DIRECTORY= 040000  //   0x04000
 O_TMPFILE= 020000000  // 0x400000
 
 ufdc_bits: .int O_RDWR|O_DIRECTORY|O_TMPFILE
