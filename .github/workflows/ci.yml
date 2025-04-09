@@ -22,6 +22,8 @@ env:
   ZSTD_CLEVEL: 9
   # 2025-03-05
   ZIG_DIST_VERSION: 0.14.0
+  # 2025-04-08
+  #ZIG_DIST_VERSION: 0.15.0-dev.263+d8153fa74
 
 jobs:
   job-rebuild-and-verify-stubs:
@@ -490,6 +492,7 @@ jobs:
           - { zig_target: arm-linux-musleabihf, qemu: qemu-arm }
           - { zig_target: armeb-linux-musleabihf, qemu: qemu-armeb }
           - { zig_target: i386-linux-gnu.2.3.4, zig_flags: -march=i586 }
+          - { zig_target: i386-linux-gnu.2.17, zig_flags: -march=i586 }
           - { zig_target: i386-linux-musl, zig_flags: -march=i586, qemu: qemu-i386 }
           - { zig_target: i386-windows-gnu }
           - { zig_target: mips-linux-musleabi, zig_flags: -msoft-float, qemu: qemu-mips }
@@ -497,9 +500,10 @@ jobs:
           - { zig_target: mipsel-linux-musleabi, zig_flags: -msoft-float, qemu: qemu-mipsel }
           - { zig_target: mipsel-linux-musleabihf, qemu: qemu-mipsel }
           - { zig_target: powerpc-linux-musleabihf, qemu: qemu-ppc }
-          - { zig_target: powerpc64-linux-musl, qemu: qemu-ppc64 }
+          # { zig_target: powerpc64-linux-musl, qemu: qemu-ppc64 }
           - { zig_target: powerpc64le-linux-musl, qemu: qemu-ppc64le }
           - { zig_target: x86_64-linux-gnu.2.3.4, qemu: qemu-x86_64 } # can use QEMU because of gcompat
+          - { zig_target: x86_64-linux-gnu.2.17, qemu: qemu-x86_64 } # can use QEMU because of gcompat
           - { zig_target: x86_64-linux-musl, qemu: qemu-x86_64 }
           - { zig_target: x86_64-macos.11.0-none }
           - { zig_target: x86_64-windows-gnu }
@@ -530,10 +534,10 @@ jobs:
         run: |
           rev=$(git rev-parse --short=7 HEAD)
           echo "UPX_GITREV_SHORT=$rev" >> $GITHUB_ENV
-          if [[ "${{ matrix.zig_target }}" == i386-linux-gnu.2.3.4 ]]; then
+          if [[ "${{ matrix.zig_target }}" == i386-linux-gnu.2.3.* ]]; then true;
             echo "UPX_CONFIG_DISABLE_SHARED_LIBS=ON" >> $GITHUB_ENV # zig problem when linking in Debug mode
           fi
-          if [[ "${{ matrix.zig_target }}" == x86_64-linux-gnu.2.3.4 ]]; then
+          if [[ "${{ matrix.zig_target }}" == x86_64-linux-gnu.2* ]]; then true;
             echo "NEED_GCOMPAT=1" >> $GITHUB_ENV
             # TODO FIXME: problem with self-packed upx and musl+gcompat: "Not a valid dynamic program"
             echo "UPX_CONFIG_DISABLE_RUN_PACKED_TEST=ON" >> $GITHUB_ENV
@@ -542,7 +546,8 @@ jobs:
           mkdir -p -v ~/.local/bin
           cd ~/.local/bin
           ZIG_DIST_NAME=zig-linux-x86_64-${ZIG_DIST_VERSION}
-          curl -sS -L -O https://ziglang.org/builds/${ZIG_DIST_NAME}.tar.xz
+          #curl -sS -L -O https://ziglang.org/builds/${ZIG_DIST_NAME}.tar.xz
+          curl -sS -L -O https://ziglang.org/download/0.14.0/${ZIG_DIST_NAME}.tar.xz
           ls -l ${ZIG_DIST_NAME}.tar.xz
           tar -xoJf ${ZIG_DIST_NAME}.tar.xz
           rm ${ZIG_DIST_NAME}.tar.xz
@@ -613,14 +618,14 @@ jobs:
           (cd build/zig/${ZIG_TARGET}${ZIG_PIC}/release && DESTDIR="$PWD/Install with cmake" cmake --install .)
           (cd build/zig/${ZIG_TARGET}${ZIG_PIC}/release && DESTDIR="$PWD/Install with make"  make install)
       - name: Run ctest tests
-        if: ${{ matrix.zig_target == 'i386-linux-musl' || matrix.zig_target == 'x86_64-linux-musl' || matrix.zig_target == 'x86_64-linux-gnu.2.3.4' }}
+        if: ${{ matrix.zig_target == 'i386-linux-musl' || matrix.zig_target == 'x86_64-linux-musl' || contains(matrix.zig_target, 'x86_64-linux-gnu.2') }}
         run: |
           test -n "$NEED_GCOMPAT" && apk add gcompat
           jobs="${ZIG_TARGET}${ZIG_PIC}/debug ${ZIG_TARGET}${ZIG_PIC}/release"
           echo "===== parallel jobs: $jobs"
           parallel -kv --lb 'make build/zig/{}+test' ::: $jobs
       - name: Mimic ctest tests
-        if: ${{ matrix.zig_target == 'i386-linux-musl' || matrix.zig_target == 'x86_64-linux-musl' || matrix.zig_target == 'x86_64-linux-gnu.2.3.4' }}
+        if: ${{ matrix.zig_target == 'i386-linux-musl' || matrix.zig_target == 'x86_64-linux-musl' || contains(matrix.zig_target, 'x86_64-linux-gnu.2') }}
         run: |
           test -n "$NEED_GCOMPAT" && apk add gcompat
           jobs="${ZIG_TARGET}${ZIG_PIC}/debug ${ZIG_TARGET}${ZIG_PIC}/release"
@@ -637,7 +642,7 @@ jobs:
           echo "===== parallel jobs: $jobs"
           parallel -kv --lb 'cd build/zig/{} && bash ../../../../misc/testsuite/mimic_ctest.sh' ::: $jobs
       - name: Mimic ctest tests with Valgrind
-        if: ${{ matrix.zig_target == 'x86_64-linux-musl' || matrix.zig_target == 'x86_64-linux-gnu.2.3.4' }}
+        if: ${{ matrix.zig_target == 'x86_64-linux-musl' || contains(matrix.zig_target, 'x86_64-linux-gnu.2') }}
         run: |
           export UPX_CONFIG_DISABLE_EXHAUSTIVE_TESTS=ON # valgrind is SLOW
           apk add coreutils valgrind
@@ -648,7 +653,7 @@ jobs:
           echo "===== parallel jobs: $jobs"
           parallel -kv --lb 'cd build/zig/{} && bash ../../../../misc/testsuite/mimic_ctest.sh' ::: $jobs
       - name: Run file system tests
-        if: ${{ matrix.zig_target == 'i386-linux-musl' || matrix.zig_target == 'x86_64-linux-musl' || matrix.zig_target == 'x86_64-linux-gnu.2.3.4' }}
+        if: ${{ matrix.zig_target == 'i386-linux-musl' || matrix.zig_target == 'x86_64-linux-musl' || contains(matrix.zig_target, 'x86_64-linux-gnu.2') }}
         run: |
           apk add coreutils sudo
           test -n "$NEED_GCOMPAT" && apk add gcompat

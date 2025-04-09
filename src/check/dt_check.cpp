@@ -1132,6 +1132,7 @@ void upx_compiler_sanity_check(void) noexcept {
         assert_noexcept(bele->get32(d) == 0xfffefdfc);
         assert_noexcept(get_be32_signed(d) == -66052);
         assert_noexcept(get_be64(d) == 0xfffefdfcfbfaf9f8ULL);
+        assert_noexcept(bele->get64(d) == 0xfffefdfcfbfaf9f8ULL);
         assert_noexcept(get_be64_signed(d) == -283686952306184LL);
         bele = &N_BELE_RTP::le_policy;
         assert_noexcept(get_le16(d) == 0xfeff);
@@ -1144,6 +1145,7 @@ void upx_compiler_sanity_check(void) noexcept {
         assert_noexcept(bele->get32(d) == 0xfcfdfeff);
         assert_noexcept(get_le32_signed(d) == -50462977);
         assert_noexcept(get_le64(d) == 0xf8f9fafbfcfdfeffULL);
+        assert_noexcept(bele->get64(d) == 0xf8f9fafbfcfdfeffULL);
         assert_noexcept(get_le64_signed(d) == -506097522914230529LL);
         static_assert(get_be24(d) == 0xfffefd);
         static_assert(get_le24(d) == 0xfdfeff);
