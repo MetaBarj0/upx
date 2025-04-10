@@ -22,8 +22,8 @@ env:
   ZSTD_CLEVEL: 9
   # 2025-03-05
   ZIG_DIST_VERSION: 0.14.0
-  # 2025-04-08
-  #ZIG_DIST_VERSION: 0.15.0-dev.263+d8153fa74
+  # 2025-04-10
+  #ZIG_DIST_VERSION: 0.15.0-dev.286+ddcf6fcdf
 
 jobs:
   job-rebuild-and-verify-stubs:
@@ -500,7 +500,7 @@ jobs:
           - { zig_target: mipsel-linux-musleabi, zig_flags: -msoft-float, qemu: qemu-mipsel }
           - { zig_target: mipsel-linux-musleabihf, qemu: qemu-mipsel }
           - { zig_target: powerpc-linux-musleabihf, qemu: qemu-ppc }
-          # { zig_target: powerpc64-linux-musl, qemu: qemu-ppc64 }
+          - { zig_target: powerpc64-linux-musl, qemu: qemu-ppc64 }
           - { zig_target: powerpc64le-linux-musl, qemu: qemu-ppc64le }
           - { zig_target: x86_64-linux-gnu.2.3.4, qemu: qemu-x86_64 } # can use QEMU because of gcompat
           - { zig_target: x86_64-linux-gnu.2.17, qemu: qemu-x86_64 } # can use QEMU because of gcompat
@@ -509,7 +509,9 @@ jobs:
           - { zig_target: x86_64-windows-gnu }
     name: ${{ format('zigcc {0} {1}', matrix.zig_target, matrix.zig_pic) }}
     runs-on: ubuntu-latest
-    container: 'alpine:3.21'
+    #container: 'alpine:3.21'
+    #container: ${{ contains(matrix.qemu, 'qemu-ppc64') && 'alpine:3.19' || 'alpine:3.21' }} # QEMU bug
+    container: ${{ (matrix.qemu == 'qemu-ppc64') && 'alpine:edge' || 'alpine:3.21' }} # QEMU bug
     env:
       UPX_CONFIG_HAVE_WORKING_BUILD_RPATH: ''
       # for zig-cc wrapper scripts (see below):
@@ -522,7 +524,7 @@ jobs:
         if: ${{ job.container }}
         shell: sh
         run: |
-          apk update && apk upgrade && apk add bash cmake curl file git make parallel tar util-linux xz zstd
+          apk update && apk upgrade && apk add bash cmake curl file git make parallel patch tar util-linux xz zstd
           # set PATH like in Ubuntu
           echo "PATH=$HOME/.local/bin:$PATH" >> $GITHUB_ENV
           git config --global --add safe.directory '*' # needed when running in a container
@@ -554,6 +556,9 @@ jobs:
           ln -s -v ${ZIG_DIST_NAME}/zig zig
           #echo "PATH=$PATH" && which zig
           echo -n 'zig version: '; zig version
+          # patch zig
+          echo "HOME=$HOME"; ls -la "$HOME" /__w /__w/upx || true
+          #(cd ${ZIG_DIST_NAME} && patch -p1 -i /__w/upx/upx/misc/patches/zig/0001-x.patch)
           # create wrapper scripts (needed for CMake)
           log=
           log='set -x\n'
