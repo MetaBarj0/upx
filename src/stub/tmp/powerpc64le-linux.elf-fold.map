@@ -56,8 +56,8 @@ SYSCALLS        0x0000000000000000      0x148
  .note.GNU-stack
                 0x0000000000000000        0x0 tmp/powerpc64le-linux.elf-fold.o
 
-EXP_HEAD        0x0000000000000000       0xa8
- EXP_HEAD       0x0000000000000000       0xa8 tmp/powerpc64le-linux.elf-fold.o
+EXP_HEAD        0x0000000000000000       0xac
+ EXP_HEAD       0x0000000000000000       0xac tmp/powerpc64le-linux.elf-fold.o
                 0x0000000000000000                f_expand
 
 EXP_TAIL        0x0000000000000000       0x8c
